@@ -1,0 +1,12 @@
+from fastapi import APIRouter
+from app.models.request_models import NotesRequest
+from app.services.exercise_service import generate_vocab_exercises, generate_vocab_exercises_type1
+
+router = APIRouter()
+
+@router.post("/generate-vocab")
+async def generate_vocab(data: NotesRequest):
+    print("executing generate vocab")
+    response = await generate_vocab_exercises_type1(data.notes)
+    print(response)
+    return response
