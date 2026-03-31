@@ -12,7 +12,7 @@
 /build
 
 #backend
-/backend/app/services
+backend/app/core/config.py
 
 # misc
 .DS_Store

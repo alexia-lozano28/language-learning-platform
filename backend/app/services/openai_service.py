@@ -2,9 +2,10 @@ import openai
 import os
 from openai import OpenAI
 import json
+from core.config import OPENAI_API_KEY
 
 client = OpenAI(
-  api_key=""
+    api_key=OPENAI_API_KEY
 )
 
 async def call_openai(prompt: str):
