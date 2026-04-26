@@ -13,7 +13,8 @@
 
 #backend
 backend/app/core/config.py
-
+.env
+.venv
 # misc
 .DS_Store
 .env.local
@@ -25,3 +26,6 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 node_modules
+
+__pycache__/
+*.pyc

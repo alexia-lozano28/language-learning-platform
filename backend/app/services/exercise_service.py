@@ -26,28 +26,93 @@ async def generate_vocab_exercises_type1(notes: str):
     Return JSON only.
     """
 
-    response = await call_openai(prompt)
-    print(response)
-    output_text = response.output[1].content[0].text
+    # response = await call_openai(prompt)
+    # print(response)
+    # output_text = response.output[1].content[0].text
 
-    # Convertimos a dict para que FastAPI lo devuelva como JSON
-    import json
-    vocab_json = json.loads(output_text)
+    # # Convertimos a dict para que FastAPI lo devuelva como JSON
+    # import json
+    # vocab_json = json.loads(output_text)
+    vocab_json = [
+    { "word": "sich waschen", "answer": "to wash oneself" },
+    { "word": "sich freuen", "answer": "to be happy / to look forward to" },
+    { "word": "Reflexivpronomen", "answer": "reflexive pronoun" },
+    { "word": "Subjekt", "answer": "subject" },
+    { "word": "Akkusativ", "answer": "accusative" },
+    { "word": "Dativ", "answer": "dative" },
+    { "word": "sich merken", "answer": "to remember" },
+    { "word": "sich ausruhen", "answer": "to rest / to relax" },
+    { "word": "sich beeilen", "answer": "to hurry" },
+    { "word": "sich befinden", "answer": "to be located" },
+    { "word": "Handelnder", "answer": "agent / doer" },
+    { "word": "Betroffener", "answer": "affected person" },
+    { "word": "Hauptsatz", "answer": "main clause" },
+    { "word": "Nebensatz", "answer": "subordinate clause" },
+    { "word": "stehen", "answer": "to stand / to be positioned" },
+    { "word": "direkt", "answer": "directly" },
+    { "word": "nach", "answer": "after" },
+    { "word": "Verb", "answer": "verb" },
+    { "word": "ich wasche mich", "answer": "I wash myself" },
+    { "word": "ich wasche das Auto", "answer": "I wash the car" }
+    ]
+    
     return vocab_json
 
-async def generate_vocab_exercises_type2(notes: str):
+async def generate_fillInTheBlanks_exercises(notes: str):
     prompt = f"""
-    Generate vocabulary exercises from:
+    Generate fill-in-the-blanks exercises from:
     {notes}
 
     Return JSON only.
     """
 
-    response = await call_openai(prompt)
-    output_text = response.output[1].content[0].text
+    # response = await call_openai(prompt)
+    # output_text = response.output[1].content[0].text
 
-    # Convertimos a dict para que FastAPI lo devuelva como JSON
-    import json
-    vocab_json = json.loads(output_text)
-    print(vocab_json)
+    # # Convertimos a dict para que FastAPI lo devuelva como JSON
+    # import json
+    # vocab_json = json.loads(output_text)
+    # print(vocab_json)
+    response =[
+    {
+        "sentence": "Ich ___ mich jeden Morgen.",
+        "answer": "wasche"
+    },
+    {
+        "sentence": "Du ___ dich schnell.",
+        "answer": "beeilst"
+    },
+    {
+        "sentence": "Er ___ sich auf das Wochenende.",
+        "answer": "freut"
+    },
+    {
+        "sentence": "Wir ___ uns nach der Arbeit.",
+        "answer": "ausruhen"
+    },
+    {
+        "sentence": "Ihr ___ euch für die Schule.",
+        "answer": "beeilt"
+    },
+    {
+        "sentence": "Sie ___ sich in Berlin.",
+        "answer": "befinden"
+    },
+    {
+        "sentence": "Ich merke ___ das Wort.",
+        "answer": "mir"
+    },
+    {
+        "sentence": "...weil ich ___ freue.",
+        "answer": "mich"
+    },
+    {
+        "sentence": "Im Hauptsatz steht das Reflexivpronomen direkt nach dem ___.",
+        "answer": "Verb"
+    },
+    {
+        "sentence": "Im Nebensatz steht es direkt nach dem ___.",
+        "answer": "Subjekt"
+    }
+    ]
     return response

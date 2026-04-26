@@ -1,0 +1,114 @@
+.exercise-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 80vh;
+}
+
+.exercise-general-page {
+  width: 100%;
+  padding: 20px;
+}
+
+.card-box {
+  text-align: center;
+  padding: 30px;
+  border-radius: 12px;
+  background: #f7f7f7;
+  width: 300px;
+}
+
+.word {
+  font-size: 28px;
+  margin: 20px 0;
+}
+
+input {
+  width: 90%;
+  padding: 10px;
+  margin-bottom: 10px;
+}
+
+.result-box {
+  text-align: center;
+}
+
+.history-card {
+  margin-top: 20px;
+}
+
+.result-session {
+  margin-bottom: 30px;
+}
+
+.session-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.date {
+  font-size: 12px;
+  color: gray;
+}
+
+.answers-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 2fr));
+  gap: 12px;
+}
+.review {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  margin-top: 20px;
+}
+.review-item {
+  background: #ffffff;
+  padding: 12px 14px;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+  text-align: left;
+  transition: transform 0.15s ease;
+}
+
+.review-item:hover {
+  transform: translateY(-3px);
+}
+
+/* CARD STYLE */
+.answer-card {
+  padding: 12px;
+  border-radius: 12px;
+  background: white;
+  border: 2px solid #eee;
+  transition: 0.2s;
+}
+
+/* GREEN = correct */
+.answer-card.correct {
+  border-color: #2ecc71;
+  background: #eafaf1;
+}
+
+/* RED = wrong */
+.answer-card.wrong {
+  border-color: #e74c3c;
+  background: #fdecea;
+}
+
+.word {
+  font-weight: bold;
+  margin-bottom: 6px;
+}
+
+.user-answer {
+  font-size: 14px;
+}
+
+.correct-answer {
+  margin-top: 5px;
+  font-size: 13px;
+  opacity: 0.9;
+}

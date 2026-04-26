@@ -1,0 +1,84 @@
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  background: linear-gradient(180deg, #250742, #4f46e5);
+  color: #fff;
+  transition: width 0.3s ease;
+  overflow: hidden;
+  box-shadow: 4px 0 10px rgba(0, 0, 0, 0.2);
+}
+
+/* tamaños */
+.sidebar.open {
+  width: 220px;
+}
+
+.sidebar.collapsed {
+  width: 70px;
+}
+
+/* header */
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px;
+}
+
+.sidebar-header h2 {
+  font-size: 18px;
+  margin: 0;
+}
+
+/* botón */
+.toggle-btn {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 18px;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.toggle-btn:hover {
+  transform: scale(1.2);
+}
+
+/* menú */
+.sidebar-menu {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+/* items */
+.sidebar-menu li {
+  margin: 10px 0;
+}
+
+.sidebar-menu a {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 12px 20px;
+  text-decoration: none;
+  color: #cbd5e1;
+  border-radius: 10px;
+  transition: all 0.2s ease;
+}
+
+/* hover bonito */
+.sidebar-menu a:hover {
+  background-color: #89a3c7;
+  color: #fff;
+  transform: translateX(5px);
+}
+
+/* iconos */
+.icon {
+  font-size: 15px;
+  min-width: 24px;
+  text-align: center;
+}

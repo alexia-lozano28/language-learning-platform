@@ -1,14 +1,19 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { db, storage } from "../../../firebase";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { useParams } from "react-router-dom";
-
+import "./index.scss";
+const MAX_SIZE = 1 * 1024 * 1024; // 1MB
 function ClassPage() {
   const { id } = useParams();
-
+  const navigate = useNavigate();
   const [notes, setNotes] = useState("");
   const [files, setFiles] = useState([]);
+  const [userAnswers, setUserAnswers] = useState({});
+  const [score, setScore] = useState(0);
+  const [submitted, setSubmitted] = useState(false);
   const [title, setTitle] = useState("");
   const [loading, setLoading] = useState(false);
   const [vocabExercises, setVocabExercises] = useState([]);
@@ -32,6 +37,9 @@ function ClassPage() {
 
     fetchData();
   }, [id]);
+  useEffect(() => {
+    console.log("Files updated:", files);
+  }, [files]);
 
   const saveNotes = async () => {
     try {
@@ -43,21 +51,49 @@ function ClassPage() {
       console.error(err);
     }
   };
+  const fileToBase64 = (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
 
+      reader.readAsDataURL(file);
+
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = (error) => reject(error);
+    });
+  };
+  const getBase64Size = (base64) => {
+    let stringLength = base64.length - "data:image/png;base64,".length;
+    let sizeInBytes = (stringLength * 3) / 4;
+    return sizeInBytes;
+  };
   const uploadFile = async (file) => {
     if (!file) return;
 
     setLoading(true);
 
     try {
-      const fileRef = ref(storage, `classes/${id}/${Date.now()}_${file.name}`);
+      // 1. convertir a base64
+      const base64 = await fileToBase64(file);
+      // 🚨 CHECK ANTES DE GUARDAR
+      const size = getBase64Size(base64);
+      console.log("File size in bytes:", size);
+      if (size > MAX_SIZE) {
+        alert("❌ File too large. Max allowed size is 1MB per class document.");
+        setLoading(false);
+        return;
+      }
 
-      await uploadBytes(fileRef, file);
-      const url = await getDownloadURL(fileRef);
+      const fileData = {
+        data: base64,
+        name: file.name,
+        type: file.type,
+      };
 
-      const updatedFiles = [...files, url];
+      // 2. actualizar estado
+      const updatedFiles = [...files, fileData];
       setFiles(updatedFiles);
 
+      // 3. guardar en firestore
       await updateDoc(doc(db, "classes", id), {
         files: updatedFiles,
       });
@@ -81,102 +117,143 @@ function ClassPage() {
       // ✨ NO HACES JSON.parse si ya haces response.json()
       const data = await response.json();
       console.log("Generated vocab:", data);
+      const docRef = doc(db, "classes", id);
 
+      await updateDoc(docRef, {
+        exercises: data,
+      });
+      console.log(data);
       // Guardar en state para mostrar en la página
       setVocabExercises(data);
     } catch (err) {
       console.error(err);
     }
   };
-  return (
-    <div style={{ padding: "20px" }}>
-      <h2>Class {title}</h2>
 
-      {/* 📝 NOTES */}
-      <div style={{ marginBottom: "20px" }}>
-        <h3>Notes</h3>
+  const saveResults = async () => {
+    try {
+      const docRef = doc(db, "classes", id);
+
+      await updateDoc(docRef, {
+        lastScore: score,
+        totalQuestions: vocabExercises.length,
+        completedAt: new Date(),
+      });
+
+      alert("Exercise saved!");
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleInputChange = (index, value) => {
+    setUserAnswers((prev) => ({
+      ...prev,
+      [index]: value,
+    }));
+  };
+
+  const checkAnswers = () => {
+    let newScore = 0;
+
+    vocabExercises.forEach((ex, index) => {
+      const userAnswer = userAnswers[index]?.toLowerCase().trim();
+      const correctAnswer = ex.answer.toLowerCase().trim();
+
+      if (userAnswer === correctAnswer) {
+        newScore += 1;
+      }
+    });
+
+    setScore(newScore);
+    setSubmitted(true);
+  };
+
+  const goToExercise = () => {
+    generateVocab();
+    navigate(`/exercise/${id}`);
+  };
+  return (
+    <div className="class-page">
+      <h3 className="page-title">{title}</h3>
+
+      {/* NOTES */}
+      <div className="card">
+        <div className="card-header">
+          <h3>Notes</h3>
+          <div>
+            <button className="save-notes-btn" onClick={saveNotes}>
+              Save
+            </button>
+          </div>
+        </div>
+
         <textarea
-          style={{ width: "100%", height: "150px", padding: "10px" }}
+          className="notes-textarea"
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
+          placeholder="Write your notes here..."
         />
-        <button onClick={saveNotes} style={{ marginTop: "10px" }}>
-          Save notes
-        </button>
-      </div>
-
-      {/* 📂 FILE UPLOAD
-      <div style={{ marginBottom: "20px" }}>
-        <h3>Upload file</h3>
-        <input
-          type="file"
-          onChange={(e) => uploadFile(e.target.files[0])}
-        />
-        {loading && <p>Uploading...</p>}
-      </div>
-
-      
-      <div>
-        <h3>Files</h3>
-
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
-            gap: "15px",
-          }}
-        >
+        <div className="files-preview">
           {files.map((file, index) => (
-            <div
-              key={index}
-              style={{
-                border: "1px solid #ccc",
-                padding: "10px",
-                borderRadius: "10px",
-                textAlign: "center",
-              }}
-            >
-              {file.includes(".pdf") ? (
-                <a href={file} target="_blank" rel="noreferrer">
-                  📄 Open PDF
-                </a>
+            <div key={index} className="file-item">
+              {/* IMÁGENES */}
+              {file.type?.startsWith("image/") ? (
+                <img src={file.data} alt={file.name} className="preview-img" />
               ) : (
-                <img
-                  src={file}
-                  alt="uploaded"
-                  style={{ width: "100%", borderRadius: "8px" }}
+                <iframe
+                  src={file.data}
+                  width="100%"
+                  height="600px"
+                  style={{ border: "none" }}
                 />
               )}
             </div>
           ))}
         </div>
-      </div> */}
-
-      {/* 🚀 FUTURE BUTTONS */}
-      <div style={{ marginTop: "30px" }}>
-        <button onClick={generateVocab}>Create vocab exercise</button>
-        <button style={{ marginLeft: "10px" }}>Create grammar exercise</button>
+        <div>
+          <p>Import Files</p>
+          <input type="file" onChange={(e) => uploadFile(e.target.files[0])} />
+          <input
+            type="file"
+            multiple
+            onChange={(e) => {
+              Array.from(e.target.files).forEach((file) => uploadFile(file));
+            }}
+          />
+        </div>
       </div>
-      <div>
-        <button onClick={generateVocab}>Generar vocab</button>
 
-        {vocabExercises.length > 0 && (
-          <div style={{ marginTop: "20px" }}>
-            <h3>Ejercicios de vocabulario:</h3>
-            {/* <ul>
-              {vocabExercises.map((ex, index) => (
-                <li key={index}>
-                  <strong>{ex.word}</strong>: {ex.definition} <br />
-                  Ejemplo: {ex.sentence} <br />
-                  Traducción: {ex.translation}
-                </li>
-              ))}
-            </ul> */}
-            {JSON.stringify(vocabExercises)}
+      {/* ACTIONS */}
+      <div className="actions">
+        <button className="primary-btn" onClick={goToExercise}>
+          ⚡ Generate Vocabulary Exercise
+        </button>
+
+        <button className="secondary-btn">✍️ Grammar Exercise</button>
+      </div>
+
+      {/* VOCAB RESULTS */}
+      {/* {vocabExercises.length > 0 && (
+        <div className="card">
+          <h2>📚 Vocabulary Exercises</h2>
+
+          <div className="vocab-grid">
+            {vocabExercises.map((ex, index) => (
+              <div key={index} className="vocab-card">
+                <h3>{ex.word}</h3>
+                <p className="definition">{ex.definition}</p>
+
+                <p className="example">
+                  <strong>Example:</strong> {ex.sentence}
+                </p>
+
+                <p className="translation">🌍 {ex.answer}</p>
+              </div>
+            ))}
           </div>
-        )}
-         {JSON.stringify(vocabExercises)}
-      </div>
+        </div>
+      )} */}
     </div>
   );
 }

@@ -2,7 +2,7 @@ import openai
 import os
 from openai import OpenAI
 import json
-from core.config import OPENAI_API_KEY
+from app.core.config import OPENAI_API_KEY
 
 client = OpenAI(
     api_key=OPENAI_API_KEY

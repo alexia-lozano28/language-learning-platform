@@ -3,16 +3,28 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import "./App.css";
 import HomePage from "./ui/pages/HomePage";
 import ClassPage from "./ui/pages/ClassPage";
+import ClassesPage from "./ui/pages/ClassesPage";
+import SideBar from "./ui/components/SideBar";
+import { useState } from "react";
+import ExercisePage from "./ui/pages/ExercisePage";
 function App() {
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+
   return (
-    <div className="App">
-      <Router>
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/class/:id" element={<ClassPage />} />
-        </Routes>
-      </Router>
-    </div>
+    <Router>
+      <div className="App">
+        <SideBar isOpen={sidebarOpen} onToggle={() => setSidebarOpen(!sidebarOpen)} />
+        <div style={{ marginLeft: sidebarOpen ? '220px' : '70px', padding: '20px', transition: 'margin-left 0.3s ease', position: 'relative', zIndex: 1 }}>
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/class/:id" element={<ClassPage />} />
+            <Route path="/classes" element={<ClassesPage />} />
+            <Route path="/exercise/:id" element={<ExercisePage />} />
+
+          </Routes>
+        </div>
+      </div>
+    </Router>
   );
 }
 

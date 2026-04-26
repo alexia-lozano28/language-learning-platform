@@ -11,7 +11,8 @@ const firebaseConfig = {
   apiKey: "AIzaSyCDiTLaI9EL3j4MI4JYEGERtIJsdpvDhzs",
   authDomain: "language-platform-f9769.firebaseapp.com",
   projectId: "language-platform-f9769",
-  storageBucket: "language-platform-f9769.firebasestorage.app",
+  // storageBucket: "language-platform-f9769.firebasestorage.app",
+  storageBucket: "language-platform-f9769.appspot.com", // ✅ BIEN
   messagingSenderId: "888869663031",
   appId: "1:888869663031:web:16bf8be3f13d63f40aeab2"
 };
