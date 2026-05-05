@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import "./sidebar.scss";
-import { FaBook, FaDumbbell, FaLanguage , FaHouseUser} from "react-icons/fa";
+import { FaBook, FaDumbbell, FaLanguage , FaHouseUser, FaChartBar} from "react-icons/fa";
 
 function SideBar({ isOpen, onToggle }) {
   return (
@@ -24,7 +24,31 @@ function SideBar({ isOpen, onToggle }) {
         <li>
           <Link to="/classes">
             <span className="icon"><FaBook /></span>
-            {isOpen && <span>Classes</span>}
+            {isOpen && <span>Notes</span>}
+          </Link>
+        </li>
+        <li>
+          <Link to="/dictionary">
+            <span className="icon"><FaLanguage /></span>
+            {isOpen && <span>Dictionary</span>}
+          </Link>
+        </li>
+        <li>
+          <Link to="/classes">
+            <span className="icon"><FaDumbbell /></span>
+            {isOpen && <span>Practice</span>}
+          </Link>
+        </li>
+        <li>
+          <li>
+          <Link to="/profile">
+            <span className="icon"><FaChartBar /></span>
+            {isOpen && <span>Insights</span>}
+          </Link>
+        </li>
+          <Link to="/profile">
+            <span className="icon"><FaHouseUser /></span>
+            {isOpen && <span>Profile</span>}
           </Link>
         </li>
       </ul>

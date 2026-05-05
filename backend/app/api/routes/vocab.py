@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 from app.models.request_models import NotesRequest
-from app.services.exercise_service import generate_vocab_exercises, generate_vocab_exercises_type1
+from app.services.exercise_service import generate_vocab_exercises, generate_vocab_exercises_type1, generate_fillInTheBlanks_exercises
 
 router = APIRouter()
 
@@ -10,3 +10,5 @@ async def generate_vocab(data: NotesRequest):
     response = await generate_vocab_exercises_type1(data.notes)
     print(response)
     return response
+
+

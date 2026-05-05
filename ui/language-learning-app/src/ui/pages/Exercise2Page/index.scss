@@ -1,0 +1,78 @@
+.exercise-layout {
+  max-width: 700px;
+  margin: auto;
+  padding: 20px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.progress-bar {
+  height: 8px;
+  background: #eee;
+  border-radius: 10px;
+  margin-bottom: 20px;
+}
+
+.progress-fill {
+  height: 100%;
+  background: #2563eb;
+}
+
+.flashcard {
+  background: #f9fafb;
+  padding: 30px;
+  border-radius: 20px;
+  text-align: center;
+}
+
+.sentence {
+  font-size: 24px;
+}
+
+.gap {
+  border-bottom: 2px solid #2563eb;
+  padding: 0 10px;
+  margin: 0 5px;
+  font-weight: bold;
+}
+
+input {
+  margin-top: 15px;
+  padding: 10px;
+  width: 80%;
+}
+
+.actions button {
+  margin-top: 20px;
+  width: 100%;
+  padding: 12px;
+  background: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 10px;
+}
+
+.correct {
+  color: green;
+}
+
+.wrong {
+  color: red;
+}
+
+.info-row {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.info-card {
+  flex: 1;
+  background: #eee;
+  padding: 10px;
+  border-radius: 10px;
+}

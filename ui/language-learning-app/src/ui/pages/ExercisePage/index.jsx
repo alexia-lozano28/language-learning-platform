@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { db } from "../../../firebase";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
-import {useNavigate} from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import "./index.scss";
 
 function ExercisePage() {
@@ -10,7 +10,8 @@ function ExercisePage() {
 
   const [cards, setCards] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
-
+  const [showAnswer, setShowAnswer] = useState(false);
+  const [isCorrect, setIsCorrect] = useState(null);
   const [input, setInput] = useState("");
   const [score, setScore] = useState(0);
   const [finished, setFinished] = useState(false);
@@ -37,28 +38,40 @@ function ExercisePage() {
 
   // CHECK ANSWER
   const checkAnswer = () => {
-    const current = cards[currentIndex]; // ✅ FIXED (was "index")
+    const current = cards[currentIndex];
 
-    const isCorrect =
+    const correct =
       input.trim().toLowerCase() === current.answer.trim().toLowerCase();
+
+    setIsCorrect(correct);
+    setShowAnswer(true);
 
     const answerEntry = {
       word: current.word,
       correctAnswer: current.answer,
       userAnswer: input,
-      isCorrect,
+      isCorrect: correct,
     };
 
     setUserAnswers((prev) => [...prev, answerEntry]);
 
-    if (isCorrect) setScore((s) => s + 1);
-
-    nextCard();
+    if (correct) setScore((s) => s + 1);
   };
 
   // NEXT CARD
   const nextCard = () => {
     setInput("");
+
+    if (currentIndex + 1 < cards.length) {
+      setCurrentIndex((prev) => prev + 1);
+    } else {
+      setFinished(true);
+    }
+  };
+  const handleNext = () => {
+    setInput("");
+    setShowAnswer(false);
+    setIsCorrect(null);
 
     if (currentIndex + 1 < cards.length) {
       setCurrentIndex((prev) => prev + 1);
@@ -94,37 +107,91 @@ function ExercisePage() {
 
   return (
     <div className="exercise-general-page">
-      <button onClick={() => {navigate(`/class/${id}`)}}>Back to Class</button>
+      <button
+        onClick={() => {
+          navigate(`/class/${id}`);
+        }}
+      >
+        ← Back to Class
+      </button>
       {/* ===================== */}
       {/* ACTIVE EXERCISE */}
       {/* ===================== */}
       {!finished ? (
-        <div className="exercise-page">
-        <div className="card-box">
-          <h2>Translate this:</h2>
+        <div className="exercise-layout">
+          {/* HEADER */}
+          <div className="header">
+            {/* <button onClick={() => navigate(`/class/${id}`)}>←</button> */}
+            <span>FLASHCARDS</span>
+            <span className="counter">
+              {currentIndex + 1} / {cards.length} Words
+            </span>
+          </div>
 
-          <h1 className="word">{currentCard.word}</h1>
+          {/* PROGRESS BAR */}
+          <div className="progress-bar">
+            <div
+              className="progress-fill"
+              style={{
+                width: `${((currentIndex + 1) / cards.length) * 100}%`,
+              }}
+            />
+          </div>
 
-          <input
-            type="text"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="Type answer..."
-            onKeyPress={(e) => {
-              if (e.key === "Enter") {
-                checkAnswer();
-              }
-            }}
-          />
+          {/* MAIN CONTENT */}
+          <div className="content">
+            {/* CARD */}
+            <div className="flashcard">
+              <span className="direction">DE → EN</span>
 
-          <button className="primary-btn" onClick={checkAnswer}>
-            Submit
-          </button>
+              <h1>{currentCard.word}</h1>
 
-          <p>
-            {currentIndex + 1} / {cards.length}
-          </p>
-        </div>
+              <input
+                type="text"
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                placeholder="Type translation..."
+                disabled={showAnswer}
+              />
+
+              {showAnswer && (
+                <div className="feedback">
+                  <p className={isCorrect ? "correct" : "wrong"}>
+                    {isCorrect ? "Correct!" : "Incorrect"}
+                  </p>
+
+                  {!isCorrect && <p>{currentCard.answer}</p>}
+                </div>
+              )}
+            </div>
+
+            {/* BUTTON AREA */}
+            <div className="actions">
+              {!showAnswer ? (
+                <button onClick={checkAnswer}>Submit</button>
+              ) : (
+                <button onClick={handleNext}>Next</button>
+              )}
+            </div>
+
+            {/* INFO CARDS */}
+            <div className="info-row">
+              <div className="info-card">
+                <h4>Grammar Tip</h4>
+                <p>{currentCard.grammarTip}</p>
+              </div>
+
+              <div className="info-card">
+                <h4>Compound</h4>
+                <p>{currentCard.word}</p>
+              </div>
+
+              <div className="info-card">
+                <h4>Repetition</h4>
+                <p>{currentIndex + 1} times</p>
+              </div>
+            </div>
+          </div>
         </div>
       ) : (
         /* ===================== */

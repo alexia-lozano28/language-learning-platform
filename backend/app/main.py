@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from app.api.routes import vocab
+from app.api.routes import vocab, grammar
 from fastapi.middleware.cors import CORSMiddleware
 app = FastAPI()
 # Permitir requests desde React (localhost:3000)
@@ -17,4 +17,4 @@ app.add_middleware(
 )
 
 app.include_router(vocab.router, prefix="/api")
-
+app.include_router(grammar.router, prefix="/api")

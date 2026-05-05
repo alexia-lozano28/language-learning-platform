@@ -17,6 +17,8 @@ function ClassPage() {
   const [title, setTitle] = useState("");
   const [loading, setLoading] = useState(false);
   const [vocabExercises, setVocabExercises] = useState([]);
+  const [fillInTheBlanksExercises, setFillInTheBlanksExercises] = useState([]);
+
 
   useEffect(() => {
     const fetchData = async () => {
@@ -129,7 +131,31 @@ function ClassPage() {
       console.error(err);
     }
   };
+const generateFillInTheBlanks = async () => {
+    try {
+      const response = await fetch(`http://127.0.0.1:8000/api/generate-fill-in-the-blanks`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ notes }),
+      });
 
+      // ✨ NO HACES JSON.parse si ya haces response.json()
+      const data = await response.json();
+      console.log("Generated fill in the blanks:", data);
+      const docRef = doc(db, "classes", id);
+
+      await updateDoc(docRef, {
+        exercises: data,
+      });
+      console.log(data);
+      // Guardar en state para mostrar en la página
+      setFillInTheBlanksExercises(data);
+    } catch (err) {
+      console.error(err);
+    }
+  };
   const saveResults = async () => {
     try {
       const docRef = doc(db, "classes", id);
@@ -171,7 +197,11 @@ function ClassPage() {
 
   const goToExercise = () => {
     generateVocab();
-    navigate(`/exercise/${id}`);
+    navigate(`/exercise/${id}`, { state: { type: "vocab" } });
+  };
+  const goToExerciseFillInTheBlanks = () => {
+    generateFillInTheBlanks();
+    navigate(`/exercise2/${id}`, { state: { type: "fillInTheBlanks" } });
   };
   return (
     <div className="class-page">
@@ -213,8 +243,9 @@ function ClassPage() {
         </div>
         <div>
           <p>Import Files</p>
-          <input type="file" onChange={(e) => uploadFile(e.target.files[0])} />
+          <input language="en" type="file" onChange={(e) => uploadFile(e.target.files[0])} />
           <input
+            language="en"
             type="file"
             multiple
             onChange={(e) => {
@@ -230,11 +261,13 @@ function ClassPage() {
           ⚡ Generate Vocabulary Exercise
         </button>
 
-        <button className="secondary-btn">✍️ Grammar Exercise</button>
+        <button className="secondary-btn" onClick={goToExerciseFillInTheBlanks}>
+          ✍️ Fill in the Blanks Exercise
+        </button>
       </div>
 
-      {/* VOCAB RESULTS */}
-      {/* {vocabExercises.length > 0 && (
+      {/* FILL IN THE BLANKS RESULTS */}
+      {/* {fillInTheBlanksExercises.length > 0 && (
         <div className="card">
           <h2>📚 Vocabulary Exercises</h2>
 
