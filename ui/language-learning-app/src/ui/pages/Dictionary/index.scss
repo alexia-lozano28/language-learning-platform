@@ -1,0 +1,81 @@
+.dictionary-page {
+    &:focus {
+      border-color: #4c6ef5;
+    }
+  }
+
+
+.dictionary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 18px;
+}
+
+.dictionary-card {
+  background: white;
+  border-radius: 18px;
+  padding: 20px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
+  transition: 0.2s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+  }
+
+  h2 {
+    margin: 0;
+    font-size: 1.4rem;
+  }
+
+  p {
+    margin-top: 12px;
+    color: #555;
+    font-size: 1rem;
+  }
+}
+
+.dictionary-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.dictionary-card-top h2 {
+  margin: 0;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.delete-btn {
+  flex: 0 0 auto;
+  width: 32px;
+  height: 32px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+  border: none;
+
+  background: #ffe3e3;
+  color: #c92a2a;
+
+  cursor: pointer;
+}
+.empty-state {
+  text-align: center;
+  margin-top: 80px;
+  color: #777;
+}
+
+.dictionary-loading {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.2rem;
+}

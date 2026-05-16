@@ -8,6 +8,7 @@ import SideBar from "./ui/components/SideBar";
 import { useState } from "react";
 import ExercisePage from "./ui/pages/ExercisePage";
 import ExercisePage2 from "./ui/pages/Exercise2Page";
+import DictionaryPage from "./ui/pages/Dictionary";
 function App() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
@@ -22,7 +23,7 @@ function App() {
             <Route path="/classes" element={<ClassesPage />} />
             <Route path="/exercise/:id" element={<ExercisePage />} />
             <Route path="/exercise2/:id" element={<ExercisePage2 />} />
-
+            <Route path="/dictionary" element={<DictionaryPage />} />
 
           </Routes>
         </div>

@@ -1,13 +1,24 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { db } from "../../../firebase";
-import { doc, getDoc, updateDoc } from "firebase/firestore";
+import {
+  doc,
+  getDoc,
+  updateDoc,
+  collection,
+  query,
+  setDoc,
+  arrayUnion,
+  where,
+  getDocs,
+  addDoc,
+} from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 import "./index.scss";
 
 function ExercisePage() {
   const { id } = useParams();
-
+  const [savedWords, setSavedWords] = useState({});
   const [cards, setCards] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showAnswer, setShowAnswer] = useState(false);
@@ -22,14 +33,22 @@ function ExercisePage() {
   // Load data
   useEffect(() => {
     const fetchData = async () => {
-      const docRef = doc(db, "classes", id);
-      const docSnap = await getDoc(docRef);
-
-      if (docSnap.exists()) {
-        const data = docSnap.data();
-
-        setCards(data.exercises || []);
-        setResults(data.exerciseResults || []);
+      console.log(id);
+      const q = query(
+        collection(db, "exercises"),
+        where("classId", "==", id),
+        where("type", "==", "flashcards"),
+      );
+      const querySnapshot = await getDocs(q);
+      const exercisesArray = querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      console.log("Fetched exercises:", exercisesArray);
+      if (exercisesArray.length > 0) {
+        setCards(exercisesArray[0].exercises);
+      } else {
+        alert("No exercises found for this class.");
       }
     };
 
@@ -101,6 +120,84 @@ function ExercisePage() {
     alert("Results saved!");
   };
 
+  //SAVE INTO DICTIONARY
+
+  const saveWordToDictionary = async (word, translation) => {
+    console.log("clicking the button", word, translation);
+    try {
+      const q = query(
+        collection(db, "dictionary"),
+        where("user", "==", "alexialozp@gmail.com"),
+      );
+
+      const querySnapshot = await getDocs(q);
+
+      // Dictionary exists
+      if (!querySnapshot.empty) {
+        const dictionaryDoc = querySnapshot.docs[0];
+
+        const data = dictionaryDoc.data();
+
+        const currentDictionary = data.dictionary || [];
+
+        // Check if word already exists
+        const existingIndex = currentDictionary.findIndex(
+          (item) => item.word.toLowerCase() === word.toLowerCase(),
+        );
+
+        let updatedDictionary = [...currentDictionary];
+
+        if (existingIndex !== -1) {
+          // Update translation
+          updatedDictionary[existingIndex] = {
+            word,
+            translation,
+          };
+
+          console.log("Word updated");
+          setSavedWords((prev) => ({
+            ...prev,
+            [word]: "updated",
+          }));
+        } else {
+          // Add new word
+          updatedDictionary.push({
+            word,
+            translation,
+          });
+
+          console.log("Word added");
+          setSavedWords((prev) => ({
+            ...prev,
+            [word]: "saved",
+          }));
+        }
+
+        await updateDoc(dictionaryDoc.ref, {
+          dictionary: updatedDictionary,
+        });
+      } else {
+        // Create new dictionary
+        await addDoc(collection(db, "dictionary"), {
+          user: "alexialozp@gmail.com",
+          dictionary: [
+            {
+              word,
+              translation,
+            },
+          ],
+        });
+
+        console.log("Dictionary created");
+        setSavedWords((prev) => ({
+          ...prev,
+          [word]: "saved",
+        }));
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
   if (!cards.length) return <div>Loading...</div>;
 
   const currentCard = cards[currentIndex];
@@ -176,10 +273,10 @@ function ExercisePage() {
 
             {/* INFO CARDS */}
             <div className="info-row">
-              <div className="info-card">
+              {/* <div className="info-card">
                 <h4>Grammar Tip</h4>
                 <p>{currentCard.grammarTip}</p>
-              </div>
+              </div> */}
 
               <div className="info-card">
                 <h4>Compound</h4>
@@ -231,55 +328,21 @@ function ExercisePage() {
                     Correct: <b>{a.correctAnswer}</b>
                   </div>
                 )}
+                <button
+                  className={`save-word-btn ${
+                    savedWords[a.word] ? "saved" : ""
+                  }`}
+                  onClick={() => saveWordToDictionary(a.word, a.correctAnswer)}
+                >
+                  {savedWords[a.word] === "saved"
+                    ? "✅ Saved"
+                    : savedWords[a.word] === "updated"
+                      ? "🔄 Updated"
+                      : "📚 Save Word"}
+                </button>
               </div>
             ))}
           </div>
-          {/* HISTORY */}
-          {/* {results.length > 0 && (
-            <div className="card">
-              <h3>📊 History</h3>
-
-              {results.map((r, i) => (
-                <div key={i} className="result-block">
-                  <p>
-                    Score: {r.score}/{r.total}
-                  </p>
-
-                  <p>
-                    {r.date?.seconds
-                      ? new Date(r.date.seconds * 1000).toLocaleString()
-                      : new Date(r.date).toLocaleString()}
-                  </p>
-
-       
-                  <div className="review">
-                    {r.answers?.map((a, idx) => (
-                      <div key={idx} className="review-item">
-                        <strong>{a.word}</strong>
-
-                        <div>
-                          Your answer:{" "}
-                          <span
-                            style={{
-                              color: a.isCorrect ? "green" : "red",
-                            }}
-                          >
-                            {a.userAnswer}
-                          </span>
-                        </div>
-
-                        {!a.isCorrect && (
-                          <div>
-                            Correct: <b>{a.correctAnswer}</b>
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div> 
-               ))}
-            </div>
-          )}*/}
         </div>
       )}
     </div>

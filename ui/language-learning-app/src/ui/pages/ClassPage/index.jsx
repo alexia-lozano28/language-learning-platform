@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { db, storage } from "../../../firebase";
-import { doc, getDoc, updateDoc } from "firebase/firestore";
+import { doc, getDoc, updateDoc, addDoc , collection} from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { useParams } from "react-router-dom";
+import { serverTimestamp } from "firebase/firestore";
 import "./index.scss";
 const MAX_SIZE = 1 * 1024 * 1024; // 1MB
 function ClassPage() {
@@ -18,7 +19,6 @@ function ClassPage() {
   const [loading, setLoading] = useState(false);
   const [vocabExercises, setVocabExercises] = useState([]);
   const [fillInTheBlanksExercises, setFillInTheBlanksExercises] = useState([]);
-
 
   useEffect(() => {
     const fetchData = async () => {
@@ -108,7 +108,7 @@ function ClassPage() {
   // ClassPage.jsx
   const generateVocab = async () => {
     try {
-      const response = await fetch(`http://127.0.0.1:8000/api/generate-vocab`, {
+      const response = await fetch(`http://127.0.0.1:8000/api/flashcards`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -118,11 +118,12 @@ function ClassPage() {
 
       // ✨ NO HACES JSON.parse si ya haces response.json()
       const data = await response.json();
-      console.log("Generated vocab:", data);
-      const docRef = doc(db, "classes", id);
 
-      await updateDoc(docRef, {
+      await addDoc(collection(db, "exercises"), {
+        classId: id, // class id
+        type: "flashcards",
         exercises: data,
+        createdAt: serverTimestamp(),
       });
       console.log(data);
       // Guardar en state para mostrar en la página
@@ -131,23 +132,26 @@ function ClassPage() {
       console.error(err);
     }
   };
-const generateFillInTheBlanks = async () => {
+  const generateFillInTheBlanks = async () => {
     try {
-      const response = await fetch(`http://127.0.0.1:8000/api/generate-fill-in-the-blanks`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
+      const response = await fetch(
+        `http://127.0.0.1:8000/api/generate-fill-in-the-blanks`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ notes }),
         },
-        body: JSON.stringify({ notes }),
-      });
+      );
 
-      // ✨ NO HACES JSON.parse si ya haces response.json()
       const data = await response.json();
       console.log("Generated fill in the blanks:", data);
-      const docRef = doc(db, "classes", id);
-
-      await updateDoc(docRef, {
+      await addDoc(collection(db, "exercises"), {
+        classId: id, // class id
+        type: "fillInTheBlanks",
         exercises: data,
+        createdAt: serverTimestamp(),
       });
       console.log(data);
       // Guardar en state para mostrar en la página
@@ -156,21 +160,7 @@ const generateFillInTheBlanks = async () => {
       console.error(err);
     }
   };
-  const saveResults = async () => {
-    try {
-      const docRef = doc(db, "classes", id);
 
-      await updateDoc(docRef, {
-        lastScore: score,
-        totalQuestions: vocabExercises.length,
-        completedAt: new Date(),
-      });
-
-      alert("Exercise saved!");
-    } catch (err) {
-      console.error(err);
-    }
-  };
 
   const handleInputChange = (index, value) => {
     setUserAnswers((prev) => ({
@@ -243,7 +233,11 @@ const generateFillInTheBlanks = async () => {
         </div>
         <div>
           <p>Import Files</p>
-          <input language="en" type="file" onChange={(e) => uploadFile(e.target.files[0])} />
+          <input
+            language="en"
+            type="file"
+            onChange={(e) => uploadFile(e.target.files[0])}
+          />
           <input
             language="en"
             type="file"
@@ -266,27 +260,6 @@ const generateFillInTheBlanks = async () => {
         </button>
       </div>
 
-      {/* FILL IN THE BLANKS RESULTS */}
-      {/* {fillInTheBlanksExercises.length > 0 && (
-        <div className="card">
-          <h2>📚 Vocabulary Exercises</h2>
-
-          <div className="vocab-grid">
-            {vocabExercises.map((ex, index) => (
-              <div key={index} className="vocab-card">
-                <h3>{ex.word}</h3>
-                <p className="definition">{ex.definition}</p>
-
-                <p className="example">
-                  <strong>Example:</strong> {ex.sentence}
-                </p>
-
-                <p className="translation">🌍 {ex.answer}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      )} */}
     </div>
   );
 }

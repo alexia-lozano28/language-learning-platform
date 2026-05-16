@@ -4,9 +4,9 @@ from app.services.exercise_service import generate_vocab_exercises, generate_voc
 
 router = APIRouter()
 
-@router.post("/generate-vocab")
-async def generate_vocab(data: NotesRequest):
-    print("executing generate vocab")
+@router.post("/flashcards")
+async def generate_flashcards(data: NotesRequest):
+    print("executing generate flashcards")
     response = await generate_vocab_exercises_type1(data.notes)
     print(response)
     return response

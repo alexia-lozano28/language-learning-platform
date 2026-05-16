@@ -255,3 +255,22 @@ input {
 .info-card h4 {
   margin-bottom: 5px;
 }
+
+.save-word-btn {
+  margin-top: 10px;
+  border: none;
+  padding: 10px 14px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: 0.2s ease;
+  background: #f1f3f5;
+
+  &:hover {
+    transform: translateY(-1px);
+  }
+
+  &.saved {
+    background: #d3f9d8;
+  }
+}

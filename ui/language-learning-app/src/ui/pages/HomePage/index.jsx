@@ -13,7 +13,8 @@ import "./index.scss";
 import { FaBook, FaDumbbell, FaLanguage } from "react-icons/fa";
 import CreateClassForm from "../../components/Modals/CreateClass";
 function HomePage() {
-  const [history, setHistory] = useState([]);
+  const [historyClasses, sethistoryClasses] = useState([]);
+  const [historyExercises, sethistoryExercises] = useState([]);
   const [createClassOpen, setCreateClassOpen] = useState(false);
   const navigate = useNavigate();
 
@@ -23,23 +24,36 @@ function HomePage() {
       where("user", "==", user),
       orderBy("createdAt", "desc"),
     );
+    const q2 = query(collection(db, "exercises"), orderBy("createdAt", "desc"));
     const querySnapshot = await getDocs(q);
     const classesArray = querySnapshot.docs.map((doc) => ({
       id: doc.id,
       ...doc.data(),
     }));
-    setHistory(classesArray);
+    const querySnapshot2 = await getDocs(q2);
+    const exercisesArray = querySnapshot2.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+
+    sethistoryClasses(classesArray);
+    console.log("Fetched classes:", exercisesArray);
+    sethistoryExercises(exercisesArray);
   };
 
+  
   const openNotes = (id) => {
+    navigate("/class/" + id);
+  };
+  const openExercises = (id) => {
     navigate("/class/" + id);
   };
   useEffect(() => {
     retrieveAll("alexialozp@gmail.com");
   }, []);
-useEffect(() => {
-  retrieveAll("alexialozp@gmail.com");
-}, [createClassOpen]);
+  useEffect(() => {
+    retrieveAll("alexialozp@gmail.com");
+  }, [createClassOpen]);
   return (
     <div style={{ marginLeft: "20px" }}>
       <div className="welcomeTitle">
@@ -48,7 +62,7 @@ useEffect(() => {
       </div>
       <div>
         <h3 style={{ textAlign: "left" }}>Actions</h3>
-      </div>  
+      </div>
 
       <div className="containerHomePageActions">
         <div className="cardHomePage">
@@ -73,7 +87,7 @@ useEffect(() => {
           <div className="card-icon">
             <FaLanguage />
           </div>
-          <div className="card-title">
+          <div className="card-title" onClick={() => navigate("/dictionary")}>
             <h4>Open Vocabulary Sheet</h4>
             <p>Review your words</p>
           </div>
@@ -85,13 +99,29 @@ useEffect(() => {
         </div>
 
         <div className="tableContainer">
-          {history.slice(0, 3).map((clase) => (
+          {historyClasses.slice(0, 3).map((clase) => (
             <div className="tableRow" key={clase.id}>
               <div className="tableCell title">{clase.title}</div>
 
               <div className="tableCell action">
                 <button onClick={() => openNotes(clase.id)}>
                   Go to lesson
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+        <div>
+          <h3 style={{ textAlign: "left" }}>Last Exercises</h3>
+        </div>
+        <div className="tableContainer">
+          {historyExercises.slice(0, 3).map((exercise) => (
+            <div className="tableRow" key={exercise.id}>
+              <div className="tableCell title">{exercise.type}</div>
+
+              <div className="tableCell action">
+                <button onClick={() => openExercises(exercise.id)}>
+                  Go to exercise
                 </button>
               </div>
             </div>

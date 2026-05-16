@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { db } from "../../../firebase";
-import { doc, getDoc, updateDoc } from "firebase/firestore";
+import { doc, getDoc, updateDoc , query, collection, where, getDocs} from "firebase/firestore";
 import "./index.scss";
 
 function ExercisePage2() {
@@ -21,27 +21,34 @@ function ExercisePage2() {
   const [showAnswer, setShowAnswer] = useState(false);
   const [isCorrect, setIsCorrect] = useState(null);
 
-  // LOAD DATA
   useEffect(() => {
-    const fetchData = async () => {
-      const docRef = doc(db, "classes", id);
-      const docSnap = await getDoc(docRef);
-
-      if (docSnap.exists()) {
-        const data = docSnap.data();
-        setCards(data.exercises || []);
-        setResults(data.exerciseResults || []);
-      }
-    };
-
-    fetchData();
-  }, [id]);
+      const fetchData = async () => {
+        console.log(id)
+        const q = query(
+          collection(db, "exercises"),
+          where("classId", "==", id),
+          where("type", "==", "fillInTheBlanks"),
+        );
+        const querySnapshot = await getDocs(q);
+        const exercisesArray = querySnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        console.log("Fetched exercises:", exercisesArray);
+        if (exercisesArray.length > 0) {
+          setCards(exercisesArray[0].exercises);
+        } else {
+          alert("No exercises found for this class.");
+        }
+      };
+  
+      fetchData();
+    }, [id]);
 
   const currentCard = cards[currentIndex];
 
   const normalize = (str) => str?.trim().toLowerCase();
 
-  // CHECK ANSWER
   const checkAnswer = () => {
     const correct =
       normalize(input) === normalize(currentCard.answer);
@@ -61,7 +68,6 @@ function ExercisePage2() {
     if (correct) setScore((s) => s + 1);
   };
 
-  // NEXT
   const handleNext = () => {
     setInput("");
     setShowAnswer(false);
@@ -74,7 +80,6 @@ function ExercisePage2() {
     }
   };
 
-  // SAVE RESULTS
   const saveResults = async () => {
     const docRef = doc(db, "classes", id);
     const snap = await getDoc(docRef);
@@ -114,7 +119,7 @@ function ExercisePage2() {
           {/* HEADER */}
           <div className="header">
             {/* <button onClick={() => navigate(`/class/${id}`)}>←</button> */}
-            <span>FLASHCARDS</span>
+            <span>FILL THE GAPS</span>
             <span>
               {currentIndex + 1} / {cards.length}
             </span>
@@ -202,10 +207,10 @@ function ExercisePage2() {
 
             {/* INFO CARDS */}
             <div className="info-row">
-              <div className="info-card">
+              {/* <div className="info-card">
                 <h4>Grammar</h4>
                 <p>Reflexive verb</p>
-              </div>
+              </div> */}
 
               <div className="info-card">
                 <h4>Type</h4>
