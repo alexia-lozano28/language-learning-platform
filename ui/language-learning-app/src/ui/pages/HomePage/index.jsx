@@ -41,7 +41,6 @@ function HomePage() {
     sethistoryExercises(exercisesArray);
   };
 
-  
   const openNotes = (id) => {
     navigate("/class/" + id);
   };
@@ -66,7 +65,8 @@ function HomePage() {
 
       <div className="containerHomePageActions">
         <div className="cardHomePage">
-          <div className="card-icon">
+          <div className="card-icon-circle class-circle">
+            
             <FaBook />
           </div>
           <div className="card-title" onClick={() => setCreateClassOpen(true)}>
@@ -75,7 +75,7 @@ function HomePage() {
           </div>
         </div>
         <div className="cardHomePage">
-          <div className="card-icon">
+          <div className="card-icon-circle exercise-circle">
             <FaDumbbell />
           </div>
           <div className="card-title">
@@ -84,7 +84,7 @@ function HomePage() {
           </div>
         </div>
         <div className="cardHomePage">
-          <div className="card-icon">
+          <div className="card-icon-circle vocab-circle">
             <FaLanguage />
           </div>
           <div className="card-title" onClick={() => navigate("/dictionary")}>
@@ -101,11 +101,15 @@ function HomePage() {
         <div className="tableContainer">
           {historyClasses.slice(0, 3).map((clase) => (
             <div className="tableRow" key={clase.id}>
-              <div className="tableCell title">{clase.title}</div>
-
+              <div className="row-title">
+                <span className="icon-circle class-circle">
+                  <FaBook />
+                </span>
+                <div className="tableCell title">{clase.title}</div>
+              </div>
               <div className="tableCell action">
                 <button onClick={() => openNotes(clase.id)}>
-                  Go to lesson
+                  Check
                 </button>
               </div>
             </div>
@@ -117,11 +121,15 @@ function HomePage() {
         <div className="tableContainer">
           {historyExercises.slice(0, 3).map((exercise) => (
             <div className="tableRow" key={exercise.id}>
-              <div className="tableCell title">{exercise.type}</div>
-
+              <div className="row-title">
+                <span className="icon-circle exercise-circle">
+                  <FaDumbbell />
+                </span>
+                <div className="tableCell title">{exercise.type}</div>
+              </div>
               <div className="tableCell action">
                 <button onClick={() => openExercises(exercise.id)}>
-                  Go to exercise
+                  Let's practice
                 </button>
               </div>
             </div>

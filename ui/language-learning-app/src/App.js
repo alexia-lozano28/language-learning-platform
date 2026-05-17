@@ -9,6 +9,8 @@ import { useState } from "react";
 import ExercisePage from "./ui/pages/ExercisePage";
 import ExercisePage2 from "./ui/pages/Exercise2Page";
 import DictionaryPage from "./ui/pages/Dictionary";
+import PerformanceAnalysisPage from "./ui/pages/PerformanceAnalytics";
+import PracticePage from "./ui/pages/PracticePage";
 function App() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
@@ -24,7 +26,8 @@ function App() {
             <Route path="/exercise/:id" element={<ExercisePage />} />
             <Route path="/exercise2/:id" element={<ExercisePage2 />} />
             <Route path="/dictionary" element={<DictionaryPage />} />
-
+            <Route path="/performance" element={<PerformanceAnalysisPage />} />
+            <Route path="/practice" element={<PracticePage />} />
           </Routes>
         </div>
       </div>

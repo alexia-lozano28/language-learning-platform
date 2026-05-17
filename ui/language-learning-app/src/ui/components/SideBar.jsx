@@ -34,14 +34,14 @@ function SideBar({ isOpen, onToggle }) {
           </Link>
         </li>
         <li>
-          <Link to="/classes">
+          <Link to="/practice">
             <span className="icon"><FaDumbbell /></span>
             {isOpen && <span>Practice</span>}
           </Link>
         </li>
         <li>
           <li>
-          <Link to="/profile">
+          <Link to="/performance">
             <span className="icon"><FaChartBar /></span>
             {isOpen && <span>Insights</span>}
           </Link>

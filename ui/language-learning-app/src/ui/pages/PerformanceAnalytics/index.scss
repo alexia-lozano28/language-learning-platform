@@ -1,0 +1,260 @@
+
+.performance-analytics-page {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  grid-template-areas:
+    "header header"
+    "level types"
+    "weak types"
+    "activity activity";
+
+  gap: 24px;
+  padding: 48px;
+  max-width: 1280px;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+/* HEADER */
+.page-header {
+  grid-area: header;
+
+  h2 {
+    margin: 0;
+    font-size: 34px;
+    font-weight: 700;
+  }
+
+  p {
+    margin-top: 6px;
+    color: #6b7280;
+  }
+}
+
+/* LEVEL CARD */
+.level-progress {
+  grid-area: level;
+
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+
+  padding: 24px;
+  border-radius: 22px;
+
+  border: 1px solid rgba(195, 198, 215, 0.25);
+  background: rgba(255, 255, 255, 0.85);
+
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.05);
+  backdrop-filter: blur(8px);
+}
+
+.card-label {
+  font-size: 13px;
+  color: #6b7280;
+}
+
+/* big circle level */
+.level-circle {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+
+  margin: 0 auto;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 10px solid #4f46e5;
+
+  h1 {
+    font-size: 42px;
+    margin: 0;
+  }
+}
+
+/* stats */
+.stats-column {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.mini-stat {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  padding: 10px 12px;
+  border-radius: 12px;
+
+  background: #f9fafb;
+
+  span {
+    color: #6b7280;
+    font-size: 13px;
+  }
+
+  strong {
+    font-size: 14px;
+  }
+}
+
+/* EXERCISE TYPES */
+.type-exercises {
+  grid-area: types;
+
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+
+  padding: 28px;
+  border-radius: 24px;
+
+  border: 1px solid rgba(195, 198, 215, 0.2);
+  background: #fff;
+
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+}
+
+.card-title-row h3 {
+  margin: 0;
+}
+
+.exercise-row {
+  display: grid;
+  grid-template-columns: 160px 1fr 60px;
+  gap: 16px;
+  align-items: center;
+}
+
+.exercise-info {
+  display: flex;
+  flex-direction: column;
+
+  span {
+    font-weight: 500;
+  }
+
+  small {
+    color: #6b7280;
+    font-size: 12px;
+  }
+}
+
+.exercise-bar-wrapper {
+  height: 10px;
+  background: #eef2ff;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.exercise-bar {
+  height: 100%;
+  background: #4f46e5;
+  border-radius: 999px;
+}
+
+/* WEAK SPOTS */
+.weak-spots {
+  grid-area: weak;
+
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  padding: 24px;
+  border-radius: 22px;
+
+  border: 1px solid rgba(195, 198, 215, 0.2);
+  background: #fff;
+
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.05);
+}
+
+.weak-topic {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  padding: 12px;
+  border-radius: 14px;
+
+  background: #f9fafb;
+}
+
+/* HEATMAP */
+.activity-heatmap {
+  grid-area: activity;
+
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+
+  padding: 28px;
+  border-radius: 24px;
+
+  border: 1px solid rgba(195, 198, 215, 0.2);
+  background: #fff;
+
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+}
+
+.heatmap-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 14px;
+}
+
+.heatmap-cell-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+
+  span {
+    font-size: 12px;
+    color: #6b7280;
+  }
+}
+
+.heatmap-cell {
+  width: 52px;
+  height: 52px;
+
+  border-radius: 14px;
+
+  background: #4f46e5;
+  color: white;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-weight: 600;
+}
+
+/* RESPONSIVE */
+@media (max-width: 900px) {
+  .performance-analytics-page {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "header"
+      "level"
+      "types"
+      "weak"
+      "activity";
+
+    padding: 24px;
+  }
+
+  .exercise-row {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .heatmap-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
