@@ -1,118 +1,141 @@
-from app.services.openai_service import call_openai
+from app.services.openai_service import call_openai, call_llm
+import json
+# async def generate_vocab_exercises(notes: str):
+#     prompt = f"""
+#     Generate vocabulary exercises from:
+#     {notes}
 
-async def generate_vocab_exercises(notes: str):
+#     Return JSON only.
+#     """
+
+#     response = await call_openai(prompt)
+#     output_text = response.output[1].content[0].text
+
+#     # Convertimos a dict para que FastAPI lo devuelva como JSON
+#     import json
+#     vocab_json = json.loads(output_text)
+#     print(vocab_json)
+#     return response
+
+# import json
+
+
+
+async def generate_vocab_exercises(notes: str, image_path: str = None):
     prompt = f"""
-    Generate vocabulary exercises from:
+    German text:
+
     {notes}
 
-    Return JSON only.
+    Task:
+    Extract German vocabulary from the text above and the added image.
+
+    Rules:
+    - Use only vocabulary appearing in the German text and image.
+    - Level A2.
+    - Ignore these instructions.
+    - Translate each word or expression into English.
+    - Generate 10 flashcards.
+
+    Return ONLY JSON.
+
+    Example:
+
+    [
+    {{
+        "word": "ich",
+        "answer": "I"
+    }}
+    ]
     """
+    output_text = await call_llm(prompt, image_path)
 
-    response = await call_openai(prompt)
-    output_text = response.output[1].content[0].text
+    # Clean common Llama mistakes
+    output_text = output_text.strip()
 
-    # Convertimos a dict para que FastAPI lo devuelva como JSON
-    import json
+    if output_text.startswith("```json"):
+        output_text = output_text[7:]
+
+    if output_text.startswith("```"):
+        output_text = output_text[3:]
+
+    if output_text.endswith("```"):
+        output_text = output_text[:-3]
+
+    output_text = output_text.strip()
+
     vocab_json = json.loads(output_text)
-    print(vocab_json)
-    return response
+    if isinstance(vocab_json, list):
+        flashcards = vocab_json
+    elif "flashcards" in vocab_json:
+        flashcards = vocab_json["flashcards"]
+    else:
+        raise ValueError("Unexpected response format")
+    return flashcards
 
-async def generate_vocab_exercises_type1(notes: str):
+async def generate_fillInTheBlanks_exercises(notes: str, image_path: str = None):
     prompt = f"""
-    Generate vocabulary exercises from the following notes:
-    {notes}
-    where you take single words from these notes randomly and up to 20 words, and return it in a JSON format where one key is the original value
-    and the other key is called anwser where you can find its translation, so I can create an exercise where the input of the student will be compared with the transaltion (answer)
-    Return JSON only.
-    """
+    German text:
 
-    # response = await call_openai(prompt)
-    # print(response)
-    # output_text = response.output[1].content[0].text
-
-    # # Convertimos a dict para que FastAPI lo devuelva como JSON
-    # import json
-    # vocab_json = json.loads(output_text)
-    vocab_json = [
-    { "word": "sich waschen", "answer": "to wash oneself" },
-    { "word": "sich freuen", "answer": "to be happy / to look forward to" },
-    { "word": "Reflexivpronomen", "answer": "reflexive pronoun" },
-    { "word": "Subjekt", "answer": "subject" },
-    { "word": "Akkusativ", "answer": "accusative" },
-    { "word": "Dativ", "answer": "dative" },
-    { "word": "sich merken", "answer": "to remember" },
-    { "word": "sich ausruhen", "answer": "to rest / to relax" },
-    { "word": "sich beeilen", "answer": "to hurry" },
-    { "word": "sich befinden", "answer": "to be located" },
-    { "word": "Handelnder", "answer": "agent / doer" },
-    { "word": "Betroffener", "answer": "affected person" },
-    { "word": "Hauptsatz", "answer": "main clause" },
-    { "word": "Nebensatz", "answer": "subordinate clause" },
-    { "word": "stehen", "answer": "to stand / to be positioned" },
-    { "word": "direkt", "answer": "directly" },
-    { "word": "nach", "answer": "after" },
-    { "word": "Verb", "answer": "verb" },
-    { "word": "ich wasche mich", "answer": "I wash myself" },
-    { "word": "ich wasche das Auto", "answer": "I wash the car" }
-    ]
-    
-    return vocab_json
-
-async def generate_fillInTheBlanks_exercises(notes: str):
-    prompt = f"""
-    Generate fill-in-the-blanks exercises from:
     {notes}
 
-    Return JSON only.
-    """
+    Task:
+    Generate fill-in-the-blank exercises using the German text above and the added image.
 
-    # response = await call_openai(prompt)
-    # output_text = response.output[1].content[0].text
+    Rules:
+    - Use only information and vocabulary appearing in the German text and image.
+    - Level A2.
+    - Ignore these instructions.
+    - Hide important vocabulary words (nouns, verbs, adjectives, expressions).
+    - Every exercise must focus on different vocabulary.
+    - Avoid duplicate or near-duplicate sentences.
+    - Use a variety of nouns, verbs and expressions.
+    - Create 10 fill-in-the-blank exercises.
+    - Replace exactly one important word or expression in each sentence with "___".
+    - The missing word must be recoverable from the provided material.
+    - Keep the sentences grammatically correct except for the blank.
+    - Do not repeat the same answer multiple times.
+    - Return the complete sentence with the blank and the missing word.
 
-    # # Convertimos a dict para que FastAPI lo devuelva como JSON
-    # import json
-    # vocab_json = json.loads(output_text)
-    # print(vocab_json)
-    response =[
-    {
-        "sentence": "Ich ___ mich jeden Morgen.",
-        "answer": "wasche"
-    },
-    {
-        "sentence": "Du ___ dich schnell.",
-        "answer": "beeilst"
-    },
-    {
-        "sentence": "Er ___ sich auf das Wochenende.",
-        "answer": "freut"
-    },
-    {
-        "sentence": "Wir ___ uns nach der Arbeit.",
-        "answer": "ausruhen"
-    },
-    {
-        "sentence": "Ihr ___ euch für die Schule.",
-        "answer": "beeilt"
-    },
-    {
-        "sentence": "Sie ___ sich in Berlin.",
-        "answer": "befinden"
-    },
-    {
-        "sentence": "Ich merke ___ das Wort.",
-        "answer": "mir"
-    },
-    {
-        "sentence": "...weil ich ___ freue.",
-        "answer": "mich"
-    },
-    {
-        "sentence": "Im Hauptsatz steht das Reflexivpronomen direkt nach dem ___.",
-        "answer": "Verb"
-    },
-    {
-        "sentence": "Im Nebensatz steht es direkt nach dem ___.",
-        "answer": "Subjekt"
-    }
+    Return ONLY JSON.
+
+    Example:
+
+    [
+        {{
+            "sentence": "Ich ___ mich jeden Morgen.",
+            "answer": "wasche"
+        }},
+        {{
+            "sentence": "Du ___ dich schnell.",
+            "answer": "beeilst"
+        }},
+        {{
+            "sentence": "Er ___ sich auf das Wochenende.",
+            "answer": "freut"
+        }}
     ]
+    """
+    output_text = await call_llm(prompt, image_path)
+
+    # Clean common Llama mistakes
+    output_text = output_text.strip()
+
+    if output_text.startswith("```json"):
+        output_text = output_text[7:]
+
+    if output_text.startswith("```"):
+        output_text = output_text[3:]
+
+    if output_text.endswith("```"):
+        output_text = output_text[:-3]
+
+    output_text = output_text.strip()
+
+    parsed_json = json.loads(output_text)
+    if isinstance(parsed_json, list):
+        response = parsed_json
+    else:
+        raise ValueError("Unexpected response format")
+   
     return response

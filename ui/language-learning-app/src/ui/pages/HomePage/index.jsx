@@ -44,8 +44,13 @@ function HomePage() {
   const openNotes = (id) => {
     navigate("/class/" + id);
   };
-  const openExercises = (id) => {
-    navigate("/class/" + id);
+  const openExercises = (exercise) => {
+    const { id, type } = exercise;
+    if(type === "flashcards"){
+      navigate("/exercise/" + id, { state: { type: "flashcards" } });
+    } else if(type === "fillInTheBlanks"){
+      navigate("/exercise2/" + id, { state: { type: "fillInTheBlanks" } });
+    }
   };
   useEffect(() => {
     retrieveAll("alexialozp@gmail.com");
@@ -66,7 +71,6 @@ function HomePage() {
       <div className="containerHomePageActions">
         <div className="cardHomePage">
           <div className="card-icon-circle class-circle">
-            
             <FaBook />
           </div>
           <div className="card-title" onClick={() => setCreateClassOpen(true)}>
@@ -108,9 +112,7 @@ function HomePage() {
                 <div className="tableCell title">{clase.title}</div>
               </div>
               <div className="tableCell action">
-                <button onClick={() => openNotes(clase.id)}>
-                  Check
-                </button>
+                <button onClick={() => openNotes(clase.id)}>Check</button>
               </div>
             </div>
           ))}
@@ -126,9 +128,10 @@ function HomePage() {
                   <FaDumbbell />
                 </span>
                 <div className="tableCell title">{exercise.type}</div>
+                <div>{exercise.createdAt?.toDate().toLocaleString()}</div>
               </div>
               <div className="tableCell action">
-                <button onClick={() => openExercises(exercise.id)}>
+                <button onClick={() => openExercises(exercise)}>
                   Let's practice
                 </button>
               </div>

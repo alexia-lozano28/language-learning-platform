@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { db, storage } from "../../../firebase";
-import { doc, getDoc, updateDoc, addDoc , collection} from "firebase/firestore";
+import { doc, getDoc, updateDoc, addDoc, collection } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { useParams } from "react-router-dom";
 import { serverTimestamp } from "firebase/firestore";
@@ -10,14 +10,16 @@ const MAX_SIZE = 1 * 1024 * 1024; // 1MB
 function ClassPage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+  const [loadingExercise, setLoadingExercise] = useState(false);
   const [notes, setNotes] = useState("");
   const [files, setFiles] = useState([]);
+  const [image, setImage] = useState(null);
   const [userAnswers, setUserAnswers] = useState({});
   const [score, setScore] = useState(0);
   const [submitted, setSubmitted] = useState(false);
   const [title, setTitle] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [vocabExercises, setVocabExercises] = useState([]);
+  const [createdExerciseId, setCreatedExerciseId] = useState("");
   const [fillInTheBlanksExercises, setFillInTheBlanksExercises] = useState([]);
 
   useEffect(() => {
@@ -29,7 +31,7 @@ function ClassPage() {
         if (docSnap.exists()) {
           const data = docSnap.data();
           setNotes(data.notes || "");
-          setFiles(data.files || []);
+          setImage(data.image || null);
           setTitle(data.title || "");
         }
       } catch (err) {
@@ -39,9 +41,10 @@ function ClassPage() {
 
     fetchData();
   }, [id]);
+
   useEffect(() => {
-    console.log("Files updated:", files);
-  }, [files]);
+    console.log("Image updated:", image);
+  }, [image]);
 
   const saveNotes = async () => {
     try {
@@ -74,30 +77,26 @@ function ClassPage() {
     setLoading(true);
 
     try {
-      // 1. convertir a base64
       const base64 = await fileToBase64(file);
-      // 🚨 CHECK ANTES DE GUARDAR
+
       const size = getBase64Size(base64);
-      console.log("File size in bytes:", size);
+
       if (size > MAX_SIZE) {
-        alert("❌ File too large. Max allowed size is 1MB per class document.");
+        alert("❌ File too large. Max allowed size is 1MB.");
         setLoading(false);
         return;
       }
 
-      const fileData = {
+      const imageData = {
         data: base64,
         name: file.name,
         type: file.type,
       };
 
-      // 2. actualizar estado
-      const updatedFiles = [...files, fileData];
-      setFiles(updatedFiles);
+      setImage(imageData);
 
-      // 3. guardar en firestore
       await updateDoc(doc(db, "classes", id), {
-        files: updatedFiles,
+        image: imageData,
       });
     } catch (err) {
       console.error(err);
@@ -107,32 +106,42 @@ function ClassPage() {
   };
   // ClassPage.jsx
   const generateVocab = async () => {
+    setLoadingExercise(true);
     try {
-      const response = await fetch(`http://127.0.0.1:8000/api/flashcards`, {
+      console.log("SEND TO BACKEND:", {
+        notes,
+        image: image,
+      });
+      const response = await fetch("http://127.0.0.1:8000/api/flashcards", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ notes }),
+        body: JSON.stringify({
+          notes,
+          image: image?.data || null,
+        }),
       });
 
-      // ✨ NO HACES JSON.parse si ya haces response.json()
       const data = await response.json();
 
-      await addDoc(collection(db, "exercises"), {
-        classId: id, // class id
+      const addedExercise = await addDoc(collection(db, "exercises"), {
+        classId: id,
         type: "flashcards",
         exercises: data,
         createdAt: serverTimestamp(),
       });
-      console.log(data);
-      // Guardar en state para mostrar en la página
-      setVocabExercises(data);
+      console.log("Generated vocab exercise:", addedExercise.id);
+      // setCreatedExerciseId(addedExercise.id);
+      return addedExercise.id;
     } catch (err) {
       console.error(err);
+    } finally {
+      setLoadingExercise(false);
     }
   };
   const generateFillInTheBlanks = async () => {
+    setLoadingExercise(true);
     try {
       const response = await fetch(
         `http://127.0.0.1:8000/api/generate-fill-in-the-blanks`,
@@ -141,13 +150,16 @@ function ClassPage() {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ notes }),
+          body: JSON.stringify({
+            notes,
+            image: image?.data || null,
+          }),
         },
       );
 
       const data = await response.json();
       console.log("Generated fill in the blanks:", data);
-      await addDoc(collection(db, "exercises"), {
+      const addedExercise = await addDoc(collection(db, "exercises"), {
         classId: id, // class id
         type: "fillInTheBlanks",
         exercises: data,
@@ -155,12 +167,13 @@ function ClassPage() {
       });
       console.log(data);
       // Guardar en state para mostrar en la página
-      setFillInTheBlanksExercises(data);
+      return addedExercise.id;
     } catch (err) {
       console.error(err);
+    } finally {
+      setLoadingExercise(false);
     }
   };
-
 
   const handleInputChange = (index, value) => {
     setUserAnswers((prev) => ({
@@ -169,30 +182,25 @@ function ClassPage() {
     }));
   };
 
-  const checkAnswers = () => {
-    let newScore = 0;
-
-    vocabExercises.forEach((ex, index) => {
-      const userAnswer = userAnswers[index]?.toLowerCase().trim();
-      const correctAnswer = ex.answer.toLowerCase().trim();
-
-      if (userAnswer === correctAnswer) {
-        newScore += 1;
-      }
+  const goToExercise = async () => {
+    const idEx = await generateVocab();
+    console.log(idEx);
+    navigate(`/exercise/${idEx}`, { state: { type: "vocab" } });
+  };
+  const goToExerciseFillInTheBlanks = async () => {
+    const idEx = await generateFillInTheBlanks();
+    navigate(`/exercise2/${idEx}`, {
+      state: { type: "fillInTheBlanks" },
     });
-
-    setScore(newScore);
-    setSubmitted(true);
   };
-
-  const goToExercise = () => {
-    generateVocab();
-    navigate(`/exercise/${id}`, { state: { type: "vocab" } });
-  };
-  const goToExerciseFillInTheBlanks = () => {
-    generateFillInTheBlanks();
-    navigate(`/exercise2/${id}`, { state: { type: "fillInTheBlanks" } });
-  };
+  if (loadingExercise) {
+    return (
+      <div className="loading-screen">
+        <div className="glow" />
+        <p>Generating exercises...</p>
+      </div>
+    );
+  }
   return (
     <div className="class-page">
       <h3 className="page-title">{title}</h3>
@@ -215,51 +223,40 @@ function ClassPage() {
           placeholder="Write your notes here..."
         />
         <div className="files-preview">
-          {files.map((file, index) => (
-            <div key={index} className="file-item">
-              {/* IMÁGENES */}
-              {file.type?.startsWith("image/") ? (
-                <img src={file.data} alt={file.name} className="preview-img" />
-              ) : (
-                <iframe
-                  src={file.data}
-                  width="100%"
-                  height="600px"
-                  style={{ border: "none" }}
-                />
-              )}
+          {image && (
+            <div className="file-item">
+              <img src={image.data} alt={image.name} className="preview-img" />
             </div>
-          ))}
+          )}
         </div>
         <div>
           <p>Import Files</p>
           <input
-            language="en"
             type="file"
+            accept="image/*"
             onChange={(e) => uploadFile(e.target.files[0])}
-          />
-          <input
-            language="en"
-            type="file"
-            multiple
-            onChange={(e) => {
-              Array.from(e.target.files).forEach((file) => uploadFile(file));
-            }}
           />
         </div>
       </div>
 
       {/* ACTIONS */}
       <div className="actions">
-        <button className="primary-btn" onClick={goToExercise}>
+        <button
+          className="primary-btn"
+          onClick={goToExercise}
+          disabled={loadingExercise}
+        >
           ⚡ Generate Vocabulary Exercise
         </button>
 
-        <button className="secondary-btn" onClick={goToExerciseFillInTheBlanks}>
+        <button
+          className="secondary-btn"
+          onClick={goToExerciseFillInTheBlanks}
+          disabled={loadingExercise}
+        >
           ✍️ Fill in the Blanks Exercise
         </button>
       </div>
-
     </div>
   );
 }

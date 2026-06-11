@@ -32,7 +32,7 @@ function ClassesPage() {
       <h2>All Classes</h2>
 
       <div className="tableContainer">
-        {history.slice(0, 3).map((clase) => (
+        {history.map((clase) => (
           <div className="tableRow" key={clase.id}>
             <div className="tableCell title">{clase.title}</div>
             <div className="tableCell-exercises">

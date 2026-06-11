@@ -23,25 +23,18 @@ function ExercisePage2() {
 
   useEffect(() => {
       const fetchData = async () => {
-        console.log(id)
-        const q = query(
-          collection(db, "exercises"),
-          where("classId", "==", id),
-          where("type", "==", "fillInTheBlanks"),
-        );
-        const querySnapshot = await getDocs(q);
-        const exercisesArray = querySnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-        console.log("Fetched exercises:", exercisesArray);
-        if (exercisesArray.length > 0) {
-          setCards(exercisesArray[0].exercises);
+        console.log("Fetching exercise data for ID:", id);
+        const docRef = doc(db, "exercises", id);
+        const docSnap = await getDoc(docRef);
+        console.log("Document snapshot:", docSnap);
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          console.log("Fetched exercise data:", data);
+          setCards(data.exercises);
         } else {
-          alert("No exercises found for this class.");
+          alert("No exercise found for this ID.");
         }
       };
-  
       fetchData();
     }, [id]);
 

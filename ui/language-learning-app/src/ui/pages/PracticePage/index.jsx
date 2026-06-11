@@ -21,12 +21,17 @@ function PracticePage() {
       id: doc.id,
       ...doc.data(),
     }));
-
+    console.log("Fetched exercises:", exercisesArray);
     
     sethistoryExercises(exercisesArray);
   };
-   const openExercises = (id) => {
-    navigate("/class/" + id);
+   const openExercises = (exercise) => {
+    const { id, type } = exercise;  
+    if(type === "flashcards"){
+      navigate("/exercise/" + id, { state: { type: "flashcards" } });
+    } else if(type === "fillInTheBlanks"){
+      navigate("/exercise2/" + id, { state: { type: "fillInTheBlanks" } });
+    }
   };
   useEffect(() => {
     retrieveAll("alexialozp@gmail.com");
@@ -39,16 +44,17 @@ function PracticePage() {
         <h3>Last Exercises</h3>
       </div>
       <div className="tableContainer">
-        {historyExercises.slice(0, 3).map((exercise) => (
+        {historyExercises.map((exercise) => (
           <div className="tableRow" key={exercise.id}>
             <div className="row-title">
               {/* <span className="icon-circle exercise-circle">
                 <FaDumbbell />
               </span> */}
               <div className="tableCell title">{exercise.type}</div>
+              <div className="tableCell title">{exercise.createdAt?.toDate().toLocaleString()}</div>
             </div>
             <div className="tableCell action">
-              <button onClick={() => openExercises(exercise.id)}>
+              <button onClick={() => openExercises(exercise)}>
                 Let's practice
               </button>
             </div>
